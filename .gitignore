@@ -1,0 +1,3 @@
+# ignore grunt modules
+node_modules/
+

@@ -1,0 +1,19 @@
+{
+  "name": "SnapSeed.Canvas",
+  "version": "1.0.0",
+  "description": "HTML5 Canvas Photo Edit Tools",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "\"https://dnvy0084:Skarlf#20@github.com/dnvy0084/snapseed.git\""
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dnvy0084/snapseed.git\"/issues"
+  },
+  "homepage": "https://github.com/dnvy0084/snapseed.git\""
+}
