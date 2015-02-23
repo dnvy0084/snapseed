@@ -59,9 +59,11 @@ module.exports = function(grunt) {
 
     });
 
+    grunt.loadNpmTasks( "grunt-contrib-concat" );
+    
     // Load the plugin that provides the "uglify" task.
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    
+
     // load shell command plugins
     grunt.loadNpmTasks( 'grunt-shell' );
 
