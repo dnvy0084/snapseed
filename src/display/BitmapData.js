@@ -31,6 +31,7 @@ this.createjs = this.createjs || {};
 			},
 			set: function( value )
 			{
+				console.log( this.raw );
 				console.log( "set ", value );
 			}
 		});
