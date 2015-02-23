@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/dnvy0084/snapseed.git\"/issues"
   },
-  "homepage": "https://github.com/dnvy0084/snapseed.git\""
+  "homepage": "https://github.com/dnvy0084/snapseed.git\"",
+  "devDependencies": {
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-qunit": "^0.5.2",
+    "grunt-contrib-uglify": "^0.8.0",
+    "grunt-shell": "^1.1.1"
+  }
 }
