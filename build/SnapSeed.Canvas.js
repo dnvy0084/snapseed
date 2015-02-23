@@ -1,6 +1,0 @@
-(function (){
-	window.onload = function()
-	{
-
-	};
-})();
