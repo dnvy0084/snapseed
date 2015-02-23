@@ -1,2 +1,2 @@
 # snapseed
-html5 canvas photo edit tools 
+html5 canvas photo edit tools.
