@@ -38,7 +38,7 @@ module.exports = function(grunt) {
                 command: [ 
                     'git add .',
                     'git commit -m "commited by grunt watch at <%= grunt.template.today("yyyy-mm-dd, hh:MM:ss TT") %>"',
-                    'git push origin gh-pages'
+                    'git push origin master'
                 ].join( '&' )
             }
         },
