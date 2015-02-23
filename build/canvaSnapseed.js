@@ -14,7 +14,7 @@ this.createjs = this.createjs || {};
 		this.DisplayObject_constructor();
 
 		this.imageData = imageData;
-		this.raw = new Uint8ClampledArray( imageData.data );
+		this.raw = new Uint8ClampedArray( imageData.data );
 
 		this.initProperties();
 	};
