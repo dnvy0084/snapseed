@@ -48,14 +48,12 @@ module.exports = function(grunt) {
             all: ['qunit/QunitTest.html']
         },
 
-        // connect: {
-        //     server: {
-        //         options: {
-        //             port:9001,
-        //             base: 'www-root'
-        //         },
-        //     },
-        // },
+        watch: {
+            scripts: {
+                files: [ "src/**/*.js"],
+                tasks: [ "concat", "uglify" ]
+            }
+        }
 
     });
 
@@ -69,6 +67,8 @@ module.exports = function(grunt) {
 
     // load shell command plugins
     grunt.loadNpmTasks( 'grunt-contrib-qunit' );
+
+    grunt.loadNpmTasks( "grunt-contrib-watch" );
 
     // load connect plugins: simple http server
     // grunt.loadNpmTasks('grunt-contrib-connect');

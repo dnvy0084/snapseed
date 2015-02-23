@@ -15,12 +15,8 @@
 
         var b = new createjs.BitmapData( { data: new Uint8ClampedArray( 10 ) } );
 
-        b.test = "456";
-
         QUnit.test( "BitmapData", function( assert ) {
-          
-          assert.equal( b.test, "test", "We expect value to be test" );
-          
+            assert.equal( b.colorMatrix.length, 25, "expected 25" );
         });
 
     </script>
