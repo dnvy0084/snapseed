@@ -12,13 +12,75 @@
     <div id="qunit-fixture"></div>
     <script src="http://code.jquery.com/qunit/qunit-1.17.1.js"></script>
     <script>
-
-        var b = new createjs.BitmapData( { data: new Uint8ClampedArray( 10 ) } );
-
         QUnit.test( "BitmapData", function( assert ) {
-            assert.equal( b.colorMatrix.length, 25, "expected 25" );
+
+            var b = new createjs.BitmapData( { data: new Uint8ClampedArray( 10 ) } );
+
+            assert.equal( b != null, true, "creation" );
+        });
+
+        QUnit.test( "Mat5", function( assert ){
+
+            var m = new math.Mat5([
+                1,0,0,0,0,
+                1,0,0,0,0,
+                1,0,0,0,0,
+                1,0,0,0,0,
+                1,0,0,0,0
+            ]);
+
+            assert.equal( m.raw[5], 1, "creation" );
+
+            var a = new math.Mat5([
+                0,0,0,0,0,
+                0,0,0,0,0,
+                0,0,0,0,0,
+                0,0,0,0,0,
+                0,0,0,0,0
+            ]);
+
+            var b = new math.Mat5([
+                10,10,10,10,10,
+                10,10,10,10,10,
+                10,10,10,10,10,
+                10,10,10,10,10,
+                10,10,10,10,10
+            ]);
+
+            
+            assert.equal( a.sub( b ).raw[10], -10, "sub" );
+            assert.equal( math.Mat5.mix( a, b, 0.5 ).raw[0], 5, "mix" );
+            assert.equal( a.raw[0], 0, "reference" );
+            assert.equal( b.raw[0], 10, "reference" );
+
+            var c = b.clone();
+            b.identity();
+
+            assert.equal( b.raw[0], 1, "identity" );
+            assert.equal( a.clone().raw[0], 0, "clone" );
+
+            var v = new Uint8ClampedArray( [ 255, 255, 255, 1 ] );
+
+            m.identity();
+            m.raw[0] = 0.5;
+            m.raw[20] = 10, m.raw[21] = 10, m.raw[22] = 10, m.raw[23] = 0;
+            m.mul4( v, v );
+
+            assert.equal( v[0], 138, "vector mul" );
+
+            a = new math.Mat5([
+                1,1,1,1,1,
+                1,1,1,1,1,
+                1,1,1,1,1,
+                1,1,1,1,1,
+                1,1,1,1,1
+            ]);
+
+            b = a.clone();
+            
+            console.log( a.append(b).toString() );
         });
 
     </script>
-</body>
+</body> 
 </html>

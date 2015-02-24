@@ -11,18 +11,12 @@ this.createjs = this.createjs || {};
 	*/
 	function BitmapData( imageData )
 	{
-		this.DisplayObject_constructor();
+		this.DisplayObject_constructor(); 
 
 		this.imageData = imageData;
 		this.raw = new Uint8ClampedArray( imageData.data );
-		this._colorMatrixChanged = false;
-		this._colorMatrix = new Float32Array([
-			1, 0, 0, 0, 0,
-			0, 1, 0, 0, 0,
-			0, 0, 1, 0, 0,
-			0, 0, 0, 1, 0,
-			0, 0, 0, 0, 1
-		]);
+		this.colorMatrixChanged = false;
+		this._colorMatrices = [];
 
 		this.initProperties();
 	};
@@ -33,43 +27,71 @@ this.createjs = this.createjs || {};
 
 	p.initProperties = function()
 	{
-		Object.defineProperty( this, "colorMatrix", {
+		Object.defineProperty( this, "colorMatrices", {
 
-			enumerable: false,
+			enumerable: true,
 			
 			get: function()
 			{
-				return this._colorMatrix;
+				return this._colorMatrices;
 			},
 			
 			set: function( value )
 			{
-				console.log( "set ", value );
+				if( value.constructor !== Array )
+					throw new Error( "invalid type: " + value.constructor );
+
+				this.colorMatrixChanged = true;
+				this._colorMatrices = value;
 			}
 		});
 	};
 
-
-	p.multiply32 = function( color )
+	p.updateColorMatrices = function()
 	{
-		var r = color[0],
-			g = color[1],
-			b = color[2],
-			a = color[3];
-			w = color[4] || 1;
+		if( !this.colorMatrixChanged || this._colorMatrices.length == 0 ) return;
 
-		var m = this._colorMatrix;
+		var m = this.calcColorMatrices(), 
+			srcBuf = this.raw,
+			destBuf = this.imageData.data,
+			src = new Uint8ClampedArray(3), 
+			dest = new Uint8ClampedArray(3);
 
-		color[0] = m[0] * r + m[1] * g + m[2] * b + m[3] * a + m[4] * w;
-		color[1] = m[5] * r + m[6] * g + m[7] * b + m[8] * a + m[9] * w;
-		color[2] = m[10] * r + m[11] * g + m[12] * b + m[13] * a + m[14] * w;
-		color[3] = m[15] * r + m[16] * g + m[17] * b + m[18] * a + m[19] * w;
+		for( var i = 0, l = srcBuf.length; i < l; i += 4 )
+		{
+			src[0] = srcBuf[i];
+			src[1] = srcBuf[i+1];
+			src[2] = srcBuf[i+2];
+			//src[3] = srcBuf[i+3];
+
+			m.mul3( src, dest );
+			
+			destBuf[i] = dest[0];
+			destBuf[i+1] = dest[1];
+			destBuf[i+2] = dest[2];
+			//destBuf[i+3] = dest[3];
+		}
+
+		this.colorMatrixChanged = false;
 	};
 
+	p.calcColorMatrices = function()
+	{
+		var r = this._colorMatrices[0];
+
+		for( var i = 1, l = this._colorMatrices.length; i < l; i++ )
+		{
+			r = r.append( this._colorMatrices[i] );
+		}
+
+		return r;
+	};
 
 
 	p.draw = function( context, ignoreCache )
 	{
+		this.updateColorMatrices();
+
 		context.putImageData( this.imageData, 0, 0 );
 	};
 
@@ -78,6 +100,7 @@ this.createjs = this.createjs || {};
 		var rect = this.DisplayObject_getBounds();
 
 		if(rect) { return rect; }
+
 		if( typeof this.imageData !== "undefined" )
 		{
 			return this._rectangle.setValues(0, 0, this.imageData.width, this.imageData.height);

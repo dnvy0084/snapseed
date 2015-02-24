@@ -1,0 +1,136 @@
+<html>
+<head>
+	<title>load file</title>
+	<script src="https://code.createjs.com/createjs-2014.12.12.min.js"></script>
+	<script type="text/javascript" src="../build/canvaSnapseed.js"></script>
+	<script type="text/javascript" src="http://dnvy0084.github.io/l2/js/stats.min.js"></script>
+	<script type="text/javascript">
+
+		(function (){
+			
+			var canvas,
+				context,
+				imageData,
+				bmpd,
+				stats,
+				ball,
+				stage;
+
+			var matA = new math.Mat5(),
+				matB = new math.Mat5([
+					0.2, 0.2, 0.2, 0, 0,
+					0.7, 0.7, 0.7, 0, 0,
+					0.1, 0.1, 0.1, 0, 0,
+					0  , 0  , 0  , 1, 0,
+					0  , 0  , 0  , 0, 1
+				]),
+				matC = new math.Mat5([
+					1,0,0,0,0,
+					0,1,0,0,0,
+					0,0,1,0,0,
+					0,0,0,1,0,
+					0,0,0,0,1
+				]),
+				matD = new math.Mat5();
+
+			function init()
+			{
+				context = document.getElementById( "canvas" ).getContext( "2d" );
+				onResize();
+
+				stage = new createjs.Stage( "canvas" );
+				stats = createStats();
+
+				createjs.Ticker.addEventListener( "tick", onRender );
+				createjs.Ticker.setFPS( 60 );
+
+				layout();
+
+				ball = new createjs.Shape();
+
+				var g = ball.graphics;
+
+				g.beginFill( "#c00" );
+				g.drawCircle( 0, 0, 10 );
+				g.endFill();
+
+				stage.addChild( ball );
+			};
+
+			function onResize(e)
+			{
+				context.canvas.width = document.body.clientWidth;
+				context.canvas.height = document.body.clientHeight;
+			};
+
+			function layout()
+			{
+				var img = document.getElementById( "l2" );
+
+				context.drawImage( img, 0, 0 );
+				imageData = context.getImageData( 0, 0, img.width, img.height );
+
+				bmpd = new createjs.BitmapData( imageData );
+				stage.addChild( bmpd );
+
+				bmpd.scaleX = bmpd.scaleY = 2;
+
+				context.clearRect( 0, 0, img.width, img.height );
+			};
+
+			function onRender(e)
+			{
+				stats.begin();
+
+					var t = Math.cos( e.runTime / 500 ) / 2 + 0.5;
+					var s = Math.sin( e.runTime / 500 );
+
+					matD.brightness = 60 * t;
+					matC.contrast = 1.5 * t + 0.5;
+
+					bmpd.colorMatrices = [ /*math.Mat5.mix( matA, matB, t ),*/ matC ];
+
+					ball.y = context.canvas.height / 2;
+					ball.x = t * context.canvas.width;
+
+					stage.update();
+
+				stats.end();
+			};
+
+			function createStats()
+			{
+				var stats = new Stats();
+
+				stats.setMode( 0 );
+
+				stats.domElement.style.position = "absolute";
+				stats.domElement.style.left = (document.body.clientWidth - 80) + "px";
+				stats.domElement.style.top = "0px";
+
+				document.body.appendChild( stats.domElement );
+
+				return stats;
+			}
+
+			window.onload = init;
+			window.onresize = onResize;
+		})();
+
+	</script>
+
+	<style type="text/css">
+		body{ margin: 0px; }
+		.hidden{ display: none; }
+	</style>
+
+</head>
+
+
+<body>
+	<div class="wrapper">
+		<canvas id="canvas" width="800" height="600"></canvas>
+		<div class="hidden"><img src="../raw/l2.jpg" alt="hidden image" id="l2"></div>
+	</div>
+</body>
+</html>

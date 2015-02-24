@@ -8,6 +8,7 @@ module.exports = function(grunt) {
         concat: {
             basic: {
                 src: [
+                    "src/math/*.js",
                     "src/**/*.js"
                 ],
 
