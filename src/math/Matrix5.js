@@ -112,7 +112,7 @@ this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 					_f = 1 - t,
 					m = this.raw;
 
-				m[0] = _f+binR,	m[5] = binG,	m[10] = binB,	 m[15],	m[ㅅ20] = tras,
+				m[0] = _f+binR,	m[5] = binG,	m[10] = binB,	 m[15],	m[20] = tras,
 				m[1] = binR,	m[6] = _f+binG,	m[11] = binB,	 m[16],	m[21] = tras,
 				m[2] = binR,	m[7] = binG,	m[12] = _f+binB, m[17],	m[22] = tras;
 				m[3],			m[8],			m[13],			 m[18],	m[23],

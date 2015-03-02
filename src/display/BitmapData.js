@@ -21,6 +21,21 @@ this.createjs = this.createjs || {};
 		this.initProperties();
 	};
 
+	BitmapData.getImageData = function( url, context, onComplete )
+	{
+		var img = document.createElement( "img" );
+
+		img.src = url;
+
+		img.onload = function( e )
+		{
+			img.crossOrigin = "Anonymous";
+			img.onload = null;
+
+			context.drawImage( img, 0, 0 );
+			onComplete( context.getImageData( 0, 0, img.width, img.height ) );
+		};
+	};
 
 
 	var p = createjs.extend( BitmapData, createjs.DisplayObject );
@@ -92,7 +107,7 @@ this.createjs = this.createjs || {};
 	{
 		this.updateColorMatrices();
 
-		context.putImageData( this.imageData, 0, 0 );
+		context.putImageData( this.imageData, this.x, this.y );
 	};
 
 	p.getBounds = function()
