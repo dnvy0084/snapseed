@@ -91,8 +91,9 @@
 
 					matD.brightness = 60 * t;
 					//matC.contrast = 1.5 * t + 0.5;
-					// matC.binary = 1.5 * t;
-					matC.grayscale = 6 * s;
+					// matC.binary = t;
+					matC.grayscale = 2 * s;
+					//matC.invert = 2 * s;
 
 					bmpd.colorMatrices = [ /*math.Mat5.mix( matA, matB, t ),*/ matC ];
 

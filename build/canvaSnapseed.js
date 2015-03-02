@@ -3,12 +3,13 @@
 	5x5 matrix class for colormatrix 
 
 	m[0],	m[5],	m[10],	m[15],	m[20],
-	m[1],	m[5],	m[11],	m[16],	m[21],
-	m[2],	m[6],	m[12],	m[17],	m[22],
-	m[3],	m[7],	m[13],	m[18],	m[23],
+	m[1],	m[6],	m[11],	m[16],	m[21],
+	m[2],	m[7],	m[12],	m[17],	m[22],
+	m[3],	m[8],	m[13],	m[18],	m[23],
 	m[4],	m[9],	m[14],	m[19],	m[24];
 
 */
+
 this.math = this.math || {};
 this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 
@@ -99,18 +100,27 @@ this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 
 			set: function( t )
 			{
-				var binR = t * 26.88,//0.21 * 128,
+				/*var binR = t * 26.88,//0.21 * 128,
 					binG = t * 92.16,//0.72 * 128,
-					binB = t * 0.896,//0.07 * 128,
-					tras = -t * t * 128 * 128 + t * 128,
+					binB = t * 8.96,//0.07 * 128,
+					tras = -16255.104 * t,
 					_f = 1 - t,
 					m = this.raw;
 
-				m[0] = _f+binR,	m[5] = binG,	m[10] = binB,	/*m[15],*/	m[20] = tras,
-				m[1] = binR,	m[6] = _f+binG,	m[11] = binB,	/*m[16],*/	m[21] = tras,
-				m[2] = binR,	m[7] = binG,	m[12] = _f+binB,/*m[17],*/	m[22] = tras;
-				/*m[3],	m[8],	m[13],	m[18],	m[23],
-				m[4],	m[9],	m[14],	m[19],	m[24];*/
+				m[0] = _f+binR,	m[5] = binG,	m[10] = binB,	 m[15],	m[ㅅ20] = tras,
+				m[1] = binR,	m[6] = _f+binG,	m[11] = binB,	 m[16],	m[21] = tras,
+				m[2] = binR,	m[7] = binG,	m[12] = _f+binB, m[17],	m[22] = tras;
+				m[3],			m[8],			m[13],			 m[18],	m[23],
+				m[4],			m[9],			m[14],			 m[19],	m[24];*/
+
+				var m = this.raw,
+					weight = 128;
+
+				m[0] = weight * 0.21,	m[5] = weight * 0.72,	m[10] = weight * 0.07,	m[15],	m[20] = -weight * weight + weight,
+				m[1] = weight * 0.21,	m[6] = weight * 0.72,	m[11] = weight * 0.07,	m[16],	m[21] = -weight * weight + weight,
+				m[2] = weight * 0.21,	m[7] = weight * 0.72,	m[12] = weight * 0.07, 	m[17],	m[22] = -weight * weight + weight;
+				m[3],					m[8],					m[13],			 		m[18],	m[23],
+				m[4],					m[9],					m[14],			 		m[19],	m[24];
 
 
 				/*var a = new math.Mat5(),
@@ -125,6 +135,26 @@ this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 				this.raw = a.add( b.sub( a ).scale( value ) ).raw;*/
 			}
 		});
+
+		Object.defineProperty( this, "invert", {
+			get: function()
+			{
+				return (m[0] - 1) / (-2);
+			},
+
+			set: function( t )
+			{
+				var m = this.raw,
+					scale = 1 - 2 * t,
+					translate = 255 * t;
+
+				m[0] = scale,	m[5],			m[10],			m[15],		m[20] = translate,
+				m[1] = 0,		m[6] = scale,	m[11],			m[16],		m[21] = translate,
+				m[2] = 0,		m[7],			m[12] = scale,	m[17],		m[22] = translate,
+				m[3] = 0,		m[8],			m[13],			m[18] = 1,	m[23],
+				m[4] = 0,		m[9],			m[14],			m[19],		m[24] = 1;
+			}
+		})
 	};
 
 	p.set = function( raw )
@@ -146,7 +176,7 @@ this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 
 		dest[0] = r*m[0] + g*m[5] + b*m[10] + 1*m[20],
 		dest[1] = r*m[1] + g*m[6] + b*m[11] + 1*m[21],
-		dest[2] = r*m[2] + g*m[7] + b*m[12] + 1*m[22];
+		dest[2] = r*m[2] + g*m[7] + b*m[12] + 1*m[22]; 
 	};
 
 	p.mul4 = function( src, dest )
