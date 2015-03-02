@@ -21,20 +21,29 @@ this.createjs = this.createjs || {};
 		this.initProperties();
 	};
 
-	BitmapData.getImageData = function( url, context, onComplete )
+	BitmapData.getImageData = function( url, onComplete )
 	{
-		var img = document.createElement( "img" );
+		var img = document.createElement( "img" ),
+			context = BitmapData.offscreenContext || document.createElement("canvas").getContext("2d");
 
 		img.src = url;
 
-		img.onload = function( e )
+		img.onload = function( e ) 
 		{
+			if( img.width > context.canvas.width )
+				context.canvas.width = img.width;
+
+			if( img.height > context.canvas.height )
+				context.canvas.height = img.height;
+
 			img.crossOrigin = "Anonymous";
 			img.onload = null;
 
 			context.drawImage( img, 0, 0 );
 			onComplete( context.getImageData( 0, 0, img.width, img.height ) );
 		};
+
+		BitmapData.offscreenContext = context;
 	};
 
 
