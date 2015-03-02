@@ -55,6 +55,10 @@
 				g.endFill();
 
 				stage.addChild( ball );
+
+				//matC.binary = 1;
+
+				console.log( matC.contrast, matC.binary, matC.toString() );
 			};
 
 			function onResize(e)
@@ -86,7 +90,9 @@
 					var s = Math.sin( e.runTime / 500 );
 
 					matD.brightness = 60 * t;
-					matC.contrast = 1.5 * t + 0.5;
+					//matC.contrast = 1.5 * t + 0.5;
+					// matC.binary = 1.5 * t;
+					matC.grayscale = 6 * s;
 
 					bmpd.colorMatrices = [ /*math.Mat5.mix( matA, matB, t ),*/ matC ];
 

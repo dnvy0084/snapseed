@@ -1,6 +1,13 @@
 
 /*
 	5x5 matrix class for colormatrix 
+
+	m[0],	m[5],	m[10],	m[15],	m[20],
+	m[1],	m[5],	m[11],	m[16],	m[21],
+	m[2],	m[6],	m[12],	m[17],	m[22],
+	m[3],	m[7],	m[13],	m[18],	m[23],
+	m[4],	m[9],	m[14],	m[19],	m[24];
+
 */
 this.math = this.math || {};
 this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
@@ -37,7 +44,7 @@ this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 		Object.defineProperty( this, "brightness", {
 			get: function()
 			{
-				return this.raw[20];
+				return this.raw[20]; 
 			},
 			set: function( value )
 			{
@@ -59,7 +66,65 @@ this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 				m[0] = m[6] = m[12] = value;
 				m[20] = m[21] = m[22] = 128 * ( 1 - value );
 			}
-		})
+		});
+
+		var _saturation = 1;
+
+		Object.defineProperty( this, "grayscale", {
+			get: function()
+			{
+				return _saturation;
+			},
+
+			set: function( t )
+			{
+				var _f = 1 - t,
+					_r = t * 0.21,
+					_g = t * 0.72,
+					_b = t * 0.07;
+
+				var m = this.raw;
+
+				m[0] = _f + _r, m[5] = _g, 		m[10] = _b,
+				m[1] = _r,		m[6] = _f + _g, m[11] = _b,
+				m[2] = _r,		m[7] = _g,		m[12] = _f + _b;
+			}
+		});
+
+		Object.defineProperty( this, "binary", {
+			get: function()
+			{
+				return 123;
+			},
+
+			set: function( t )
+			{
+				var binR = t * 26.88,//0.21 * 128,
+					binG = t * 92.16,//0.72 * 128,
+					binB = t * 0.896,//0.07 * 128,
+					tras = -t * t * 128 * 128 + t * 128,
+					_f = 1 - t,
+					m = this.raw;
+
+				m[0] = _f+binR,	m[5] = binG,	m[10] = binB,	/*m[15],*/	m[20] = tras,
+				m[1] = binR,	m[6] = _f+binG,	m[11] = binB,	/*m[16],*/	m[21] = tras,
+				m[2] = binR,	m[7] = binG,	m[12] = _f+binB,/*m[17],*/	m[22] = tras;
+				/*m[3],	m[8],	m[13],	m[18],	m[23],
+				m[4],	m[9],	m[14],	m[19],	m[24];*/
+
+
+				/*var a = new math.Mat5(),
+					b = new math.Mat5([
+						binR,binR,binR,0,0,
+						binG,binG,binG,0,0,
+						binB,binB,binB,0,0,
+						0,0,0,1,0,
+						tras,tras,tras,0,1
+					]);
+
+				this.raw = a.add( b.sub( a ).scale( value ) ).raw;*/
+			}
+		});
 	};
 
 	p.set = function( raw )
