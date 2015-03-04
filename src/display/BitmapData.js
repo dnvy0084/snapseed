@@ -71,6 +71,11 @@ this.createjs = this.createjs || {};
 		});
 	};
 
+	p.dispose = function()
+	{
+		console.log( "call dispose" );
+	};
+
 	p.updateColorMatrices = function()
 	{
 		if( !this.colorMatrixChanged || this._colorMatrices.length == 0 ) return;
