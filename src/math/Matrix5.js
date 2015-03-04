@@ -10,7 +10,7 @@
 
 */
 
-this.math = this.math || {};
+this.math = this.math || {}; 
 this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 
 (function(){
@@ -124,6 +124,8 @@ this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 		Object.defineProperty( this, "invert", {
 			get: function()
 			{
+				var m = this.raw;
+
 				return (m[0] - 1) / (-2);
 			},
 

@@ -17,25 +17,26 @@ this.createjs = this.createjs || {};
 		this.frameIndex = {};
 
 		this.addEvents( frameInfo );
-		this.initProperties();
+		this.initProperties(); 
 	};
 
 	var p = createjs.extend( SpriteButton, createjs.Sprite );
 
 	p.initProperties = function()
 	{
-		var _selected = false;
+		this._selected = false;
 
 		Object.defineProperty( this, "selected", {
 			get: function()
 			{
-				return _selected;
+				return this._selected;
 			},
 
 			set: function( value )
 			{
-				_selected = value;
+				if( value == this._selected ) return;
 
+				this._selected = value;
 				this.gotoAndStop( this.getFrameIndex( value ) );
 			}
 		});
@@ -43,7 +44,7 @@ this.createjs = this.createjs || {};
 
 	p.getFrameIndex = function( value )
 	{
-		return value ? this.frameIndex.mousedown : this.frameIndex.mouseup;
+		return value ? this.frameIndex.mousedown : this.frameIndex.mouseout || this.frameIndex.mouseup;
 	};
 
 	p.addEvents = function( frameInfo )

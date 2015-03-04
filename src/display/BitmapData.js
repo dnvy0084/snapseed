@@ -1,26 +1,20 @@
 
 //name space
 this.createjs = this.createjs || {};
-
+ 
 (function (){
 	
-	"use strict"; 
+	"use strict";  
+
+
 
 	/*
-		create BitmapData with ImageData Object
+		url로 ImageData 객체 생성. 
+		- img dom element생성 후 getImageData를 통해 ImageData 생성. 
+		- 이때 getImageData를 위한 RenderingContext2D 객체는 offscreen canvas를 이용.
+
+		getImageData( someURL, complete callback );
 	*/
-	function BitmapData( imageData )
-	{
-		this.DisplayObject_constructor(); 
-
-		this.imageData = imageData;
-		this.raw = new Uint8ClampedArray( imageData.data );
-		this.colorMatrixChanged = false;
-		this._colorMatrices = [];
-
-		this.initProperties();
-	};
-
 	BitmapData.getImageData = function( url, onComplete )
 	{
 		var img = document.createElement( "img" ),
@@ -46,11 +40,53 @@ this.createjs = this.createjs || {};
 		BitmapData.offscreenContext = context;
 	};
 
+	/*
+		BitmapData 객체를 Base64 data uri로 변경하여 반환. 
+		- getImageData와 같이 offscreen canvas를 이용. 
+	*/
+	BitmapData.toDataURL = function( bmpd )
+	{
+		var context = BitmapData.offscreenContext || document.createElement("canvas").getContext("2d"),
+			canvas = context.canvas,
+			imageData = bmpd.imageData;
+
+		if( imageData.width != canvas.width )
+			canvas.width = imageData.width;
+
+		if( imageData.height != canvas.height )
+			canvas.height = imageData.height;
+
+		context.putImageData( imageData, 0, 0 );
+
+		return context.canvas.toDataURL();
+	};
+
+
+	/*
+		create BitmapData with ImageData Object
+	*/
+	function BitmapData( imageData )
+	{
+		this.DisplayObject_constructor(); 
+
+		this.imageData = imageData;
+		this.raw = new Uint8ClampedArray( imageData.data );
+
+		this.initProperties();
+	};
+
 
 	var p = createjs.extend( BitmapData, createjs.DisplayObject );
 
 	p.initProperties = function()
 	{
+		this.colorMatrixChanged = false;
+		this._colorMatrices = [];
+
+		this.border = false;
+		this.borderWidth = 2;
+		this.borderStyle = "#000";
+
 		Object.defineProperty( this, "colorMatrices", {
 
 			enumerable: true,
@@ -73,14 +109,14 @@ this.createjs = this.createjs || {};
 
 	p.dispose = function()
 	{
-		console.log( "call dispose" );
+		this.imageData = null;
 	};
 
 	p.updateColorMatrices = function()
 	{
 		if( !this.colorMatrixChanged || this._colorMatrices.length == 0 ) return;
 
-		var m = this.calcColorMatrices(), 
+		var m = this._calcColorMatrices(), 
 			srcBuf = this.raw,
 			destBuf = this.imageData.data,
 			src = new Uint8ClampedArray(3), 
@@ -104,7 +140,7 @@ this.createjs = this.createjs || {};
 		this.colorMatrixChanged = false;
 	};
 
-	p.calcColorMatrices = function()
+	p._calcColorMatrices = function()
 	{
 		var r = this._colorMatrices[0];
 
@@ -119,6 +155,20 @@ this.createjs = this.createjs || {};
 
 	p.draw = function( context, ignoreCache )
 	{
+		if( this.border ){
+			context.save();
+				context.fillStyle = this.borderStyle;
+				context.beginPath();
+
+				var x = -this.borderWidth,
+					y = x,
+					w = this.imageData.width + this.borderWidth * 2,
+					h = this.imageData.height + this.borderWidth * 2;
+				context.rect( x, y, w, h );
+				context.fill();
+			context.restore();	
+		}
+
 		this.updateColorMatrices();
 
 		context.putImageData( this.imageData, this.x, this.y );
@@ -126,16 +176,14 @@ this.createjs = this.createjs || {};
 
 	p.getBounds = function()
 	{
-		var rect = this.DisplayObject_getBounds();
-
-		if(rect) { return rect; }
-
 		if( typeof this.imageData !== "undefined" )
 		{
 			return this._rectangle.setValues(0, 0, this.imageData.width, this.imageData.height);
 		}
 
-		return null;
+		this._rectangle.setValues( 0, 0, 0, 0 );
+		
+		return this._rectangle;
 	};
 
 	p.getPixel = function( x, y )

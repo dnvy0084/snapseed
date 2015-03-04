@@ -10,7 +10,7 @@
 
 */
 
-this.math = this.math || {};
+this.math = this.math || {}; 
 this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 
 (function(){
@@ -124,6 +124,8 @@ this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 		Object.defineProperty( this, "invert", {
 			get: function()
 			{
+				var m = this.raw;
+
 				return (m[0] - 1) / (-2);
 			},
 
@@ -334,26 +336,20 @@ this.math.MAT5_TYPE = this.math.MAT5_TYPE || Float32Array;
 
 //name space
 this.createjs = this.createjs || {};
-
+ 
 (function (){
 	
-	"use strict"; 
+	"use strict";  
+
+
 
 	/*
-		create BitmapData with ImageData Object
+		url로 ImageData 객체 생성. 
+		- img dom element생성 후 getImageData를 통해 ImageData 생성. 
+		- 이때 getImageData를 위한 RenderingContext2D 객체는 offscreen canvas를 이용.
+
+		getImageData( someURL, complete callback );
 	*/
-	function BitmapData( imageData )
-	{
-		this.DisplayObject_constructor(); 
-
-		this.imageData = imageData;
-		this.raw = new Uint8ClampedArray( imageData.data );
-		this.colorMatrixChanged = false;
-		this._colorMatrices = [];
-
-		this.initProperties();
-	};
-
 	BitmapData.getImageData = function( url, onComplete )
 	{
 		var img = document.createElement( "img" ),
@@ -379,11 +375,53 @@ this.createjs = this.createjs || {};
 		BitmapData.offscreenContext = context;
 	};
 
+	/*
+		BitmapData 객체를 Base64 data uri로 변경하여 반환. 
+		- getImageData와 같이 offscreen canvas를 이용. 
+	*/
+	BitmapData.toDataURL = function( bmpd )
+	{
+		var context = BitmapData.offscreenContext || document.createElement("canvas").getContext("2d"),
+			canvas = context.canvas,
+			imageData = bmpd.imageData;
+
+		if( imageData.width != canvas.width )
+			canvas.width = imageData.width;
+
+		if( imageData.height != canvas.height )
+			canvas.height = imageData.height;
+
+		context.putImageData( imageData, 0, 0 );
+
+		return context.canvas.toDataURL();
+	};
+
+
+	/*
+		create BitmapData with ImageData Object
+	*/
+	function BitmapData( imageData )
+	{
+		this.DisplayObject_constructor(); 
+
+		this.imageData = imageData;
+		this.raw = new Uint8ClampedArray( imageData.data );
+
+		this.initProperties();
+	};
+
 
 	var p = createjs.extend( BitmapData, createjs.DisplayObject );
 
 	p.initProperties = function()
 	{
+		this.colorMatrixChanged = false;
+		this._colorMatrices = [];
+
+		this.border = false;
+		this.borderWidth = 2;
+		this.borderStyle = "#000";
+
 		Object.defineProperty( this, "colorMatrices", {
 
 			enumerable: true,
@@ -406,14 +444,14 @@ this.createjs = this.createjs || {};
 
 	p.dispose = function()
 	{
-		console.log( "call dispose" );
+		this.imageData = null;
 	};
 
 	p.updateColorMatrices = function()
 	{
 		if( !this.colorMatrixChanged || this._colorMatrices.length == 0 ) return;
 
-		var m = this.calcColorMatrices(), 
+		var m = this._calcColorMatrices(), 
 			srcBuf = this.raw,
 			destBuf = this.imageData.data,
 			src = new Uint8ClampedArray(3), 
@@ -437,7 +475,7 @@ this.createjs = this.createjs || {};
 		this.colorMatrixChanged = false;
 	};
 
-	p.calcColorMatrices = function()
+	p._calcColorMatrices = function()
 	{
 		var r = this._colorMatrices[0];
 
@@ -452,6 +490,20 @@ this.createjs = this.createjs || {};
 
 	p.draw = function( context, ignoreCache )
 	{
+		if( this.border ){
+			context.save();
+				context.fillStyle = this.borderStyle;
+				context.beginPath();
+
+				var x = -this.borderWidth,
+					y = x,
+					w = this.imageData.width + this.borderWidth * 2,
+					h = this.imageData.height + this.borderWidth * 2;
+				context.rect( x, y, w, h );
+				context.fill();
+			context.restore();	
+		}
+
 		this.updateColorMatrices();
 
 		context.putImageData( this.imageData, this.x, this.y );
@@ -459,16 +511,14 @@ this.createjs = this.createjs || {};
 
 	p.getBounds = function()
 	{
-		var rect = this.DisplayObject_getBounds();
-
-		if(rect) { return rect; }
-
 		if( typeof this.imageData !== "undefined" )
 		{
 			return this._rectangle.setValues(0, 0, this.imageData.width, this.imageData.height);
 		}
 
-		return null;
+		this._rectangle.setValues( 0, 0, 0, 0 );
+		
+		return this._rectangle;
 	};
 
 	p.getPixel = function( x, y )
@@ -561,25 +611,26 @@ this.createjs = this.createjs || {};
 		this.frameIndex = {};
 
 		this.addEvents( frameInfo );
-		this.initProperties();
+		this.initProperties(); 
 	};
 
 	var p = createjs.extend( SpriteButton, createjs.Sprite );
 
 	p.initProperties = function()
 	{
-		var _selected = false;
+		this._selected = false;
 
 		Object.defineProperty( this, "selected", {
 			get: function()
 			{
-				return _selected;
+				return this._selected;
 			},
 
 			set: function( value )
 			{
-				_selected = value;
+				if( value == this._selected ) return;
 
+				this._selected = value;
 				this.gotoAndStop( this.getFrameIndex( value ) );
 			}
 		});
@@ -587,7 +638,7 @@ this.createjs = this.createjs || {};
 
 	p.getFrameIndex = function( value )
 	{
-		return value ? this.frameIndex.mousedown : this.frameIndex.mouseup;
+		return value ? this.frameIndex.mousedown : this.frameIndex.mouseout || this.frameIndex.mouseup;
 	};
 
 	p.addEvents = function( frameInfo )
@@ -613,5 +664,106 @@ this.createjs = this.createjs || {};
 	};
 
 	createjs.SpriteButton = createjs.promote( SpriteButton, "Sprite" );
+
+})();
+
+/*
+	Group
+	RadioButton Group 처럼 여러개의 selected property가 있는 객체들을 관리해주는 util class
+*/
+
+this.createjs = this.createjs || {};
+
+(function(){
+	
+	"use strict";
+
+	function Group()
+	{
+		this.EventDispatcher_constructor(); 
+
+		this._children = [];
+		this._currObj = null;
+
+		this.initProperties();
+	}
+
+	var p = createjs.extend( Group, createjs.EventDispatcher );
+
+	p.initProperties = function()
+	{
+		Object.defineProperty( this, "numChildren", {
+			get: function()
+			{
+				return this._children.length;
+			}
+		});
+
+		Object.defineProperty( this, "currentSelected", {
+			get: function()
+			{
+				return this._currObj;
+			},
+
+			set: function( o )
+			{
+				if( this._currObj == o ) return;
+
+				if( this._currObj != null )
+					this._currObj.selected = false;
+
+				this._currObj = o;
+
+				if( this._currObj != null )
+					this._currObj.selected = true;
+			}
+		});
+	};
+
+	p.add = function( o )
+	{
+		if( !o.hasOwnProperty( "selected" ) )
+			throw new Error( "selected 속성을 찾을 수 없습니다." );
+
+		if( this.contains(o) ) return;
+
+		this._children.push( o );
+	};
+
+	p.addAll = function( children )
+	{
+		for( var i = 0, l = children.length; i < l; i++ )
+		{
+			this.add( children[i] );
+		}
+	};
+
+	p.remove = function( o )
+	{
+		var i = this._children.indexOf( o );
+
+		if( i == -1 ) return null;
+
+		return this._children.splice( i, 1 )[0];
+	};
+
+	p.removeAll = function()
+	{
+		var a = [];
+
+		for( var i = 0, l = this._children.length; i < l; i++ )
+		{
+			a.push( this.remove( this._children[i] ) );
+		}
+
+		return a;
+	};
+
+	p.contains = function(o)
+	{
+		return this._children.indexOf( o ) != -1;
+	};
+
+	createjs.Group = createjs.promote( Group, "EventDispatcher" );
 
 })();
