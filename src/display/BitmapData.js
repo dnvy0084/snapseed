@@ -15,7 +15,7 @@ this.createjs = this.createjs || {};
 
 		getImageData( someURL, complete callback );
 	*/
-	BitmapData.getImageData = function( url, onComplete )
+	BitmapData.getImageData = function( url, onComplete, maximumWidth, maximumHeight )
 	{
 		var img = document.createElement( "img" ),
 			context = BitmapData.offscreenContext || document.createElement("canvas").getContext("2d");
@@ -33,8 +33,22 @@ this.createjs = this.createjs || {};
 			img.crossOrigin = "Anonymous";
 			img.onload = null;
 
-			context.drawImage( img, 0, 0 );
-			onComplete( context.getImageData( 0, 0, img.width, img.height ) );
+			var w = img.width, 
+				h = img.height;
+
+			if( typeof maximumWidth === "number" && typeof maximumHeight === "number")
+			{
+				var scale = Math.min( maximumWidth / w, maximumHeight / h );
+
+				if( scale < 1 )
+				{
+					w = parseInt( w * scale + 0.0000001 );
+					h = parseInt( h * scale + 0.0000001 );
+				}
+			}
+
+			context.drawImage( img, 0, 0, w, h );
+			onComplete( context.getImageData( 0, 0, w, h ) );
 		};
 
 		BitmapData.offscreenContext = context;
@@ -164,14 +178,14 @@ this.createjs = this.createjs || {};
 					y = x,
 					w = this.imageData.width + this.borderWidth * 2,
 					h = this.imageData.height + this.borderWidth * 2;
-				context.rect( x, y, w, h );
+				context.rect( parseInt(x), parseInt(y), w, h );
 				context.fill();
 			context.restore();	
 		}
 
 		this.updateColorMatrices();
 
-		context.putImageData( this.imageData, this.x, this.y );
+		context.putImageData( this.imageData, parseInt(this.x), parseInt(this.y) );
 	};
 
 	p.getBounds = function()
